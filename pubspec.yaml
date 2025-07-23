@@ -13,6 +13,8 @@ dependencies:
 
   dio: ^5.4.0
   rxdart: ^0.27.2
+  geocoding: ^3.0.0
+  collection: ^1.18.0
 
 
 

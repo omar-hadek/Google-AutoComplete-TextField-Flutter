@@ -22,6 +22,9 @@ class PlacesAutocompleteResponse {
     data['status'] = this.status;
     return data;
   }
+
+  PlacesAutocompleteResponse copyWith({List<Prediction>? predictions, String? status}) =>
+      PlacesAutocompleteResponse(predictions: predictions ?? this.predictions, status: status ?? this.status);
 }
 
 class Prediction {
@@ -35,6 +38,7 @@ class Prediction {
   List<String>? types;
   String? lat;
   String? lng;
+  String? geoAddress;
 
   Prediction(
       {this.description,
@@ -46,7 +50,8 @@ class Prediction {
       this.terms,
       this.types,
       this.lat,
-      this.lng});
+      this.lng,
+      this.geoAddress});
 
   Prediction.fromJson(Map<String, dynamic> json) {
     description = json['description'];
@@ -59,11 +64,10 @@ class Prediction {
     }
     placeId = json['place_id'];
     reference = json['reference'];
-    structuredFormatting = json['structured_formatting'] != null
-        ? new StructuredFormatting.fromJson(json['structured_formatting'])
-        : null;
+    structuredFormatting =
+        json['structured_formatting'] != null ? new StructuredFormatting.fromJson(json['structured_formatting']) : null;
     if (json['terms'] != null) {
-      terms =[];
+      terms = [];
       json['terms'].forEach((v) {
         terms!.add(new Terms.fromJson(v));
       });
@@ -78,8 +82,7 @@ class Prediction {
     data['description'] = this.description;
     data['id'] = this.id;
     if (this.matchedSubstrings != null) {
-      data['matched_substrings'] =
-          this.matchedSubstrings!.map((v) => v.toJson()).toList();
+      data['matched_substrings'] = this.matchedSubstrings!.map((v) => v.toJson()).toList();
     }
     data['place_id'] = this.placeId;
     data['reference'] = this.reference;
@@ -95,6 +98,33 @@ class Prediction {
 
     return data;
   }
+
+  Prediction copyWith({
+    String? description,
+    String? id,
+    List<MatchedSubstrings>? matchedSubstrings,
+    String? placeId,
+    String? reference,
+    StructuredFormatting? structuredFormatting,
+    List<Terms>? terms,
+    List<String>? types,
+    String? lat,
+    String? lng,
+    String? geoAddress,
+  }) =>
+      Prediction(
+        id: id ?? this.id,
+        description: description ?? this.description,
+        matchedSubstrings: matchedSubstrings ?? this.matchedSubstrings,
+        placeId: placeId ?? this.placeId,
+        reference: reference ?? this.reference,
+        structuredFormatting: structuredFormatting ?? this.structuredFormatting,
+        terms: terms ?? this.terms,
+        types: types ?? this.types,
+        lat: lat ?? this.lat,
+        lng: lng ?? this.lng,
+        geoAddress: geoAddress ?? this.geoAddress,
+      );
 }
 
 class MatchedSubstrings {
