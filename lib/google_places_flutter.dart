@@ -19,6 +19,7 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
   GetPlaceDetailswWithLatLng? getPlaceDetailWithLatLng;
   bool isLatLngRequired = true;
   bool useGeoPositons;
+  String? orderByCityName;
   TextStyle textStyle;
   String googleAPIKey;
   int debounceTime = 600;
@@ -42,6 +43,7 @@ class GooglePlaceAutoCompleteTextField extends StatefulWidget {
       {required this.textEditingController,
       required this.googleAPIKey,
       this.debounceTime: 600,
+      this.orderByCityName,
       this.inputDecoration: const InputDecoration(),
       this.itemClick,
       this.isLatLngRequired = true,
@@ -170,6 +172,7 @@ class _GooglePlaceAutoCompleteTextFieldState extends State<GooglePlaceAutoComple
       List<Prediction> predictions = subscriptionResponse.predictions ?? [];
       if (widget.useGeoPositons) {
         predictions = await driveGeoPositions(subscriptionResponse.predictions ?? []);
+        return predictions;
       }
 
       if (text.length == 0) {
@@ -181,7 +184,19 @@ class _GooglePlaceAutoCompleteTextFieldState extends State<GooglePlaceAutoComple
       isSearched = false;
       alPredictions.clear();
       if (predictions.length > 0 && (widget.textEditingController.text.toString().trim()).isNotEmpty) {
-        alPredictions.addAll(predictions);
+        final items = widget.orderByCityName == null ? predictions : predictions
+          ..sort(
+            (a, b) {
+              bool aContains = a.description?.toLowerCase().contains(widget.orderByCityName!) == true;
+              bool bContains = b.description?.toLowerCase().contains(widget.orderByCityName!) == true;
+
+              if (aContains && !bContains) return -1;
+              if (!aContains && bContains) return 1;
+              return 0;
+            },
+          );
+
+        alPredictions.addAll(items);
       }
 
       this._overlayEntry = null;
@@ -282,11 +297,11 @@ class _GooglePlaceAutoCompleteTextFieldState extends State<GooglePlaceAutoComple
   }
 
   Future<PlaceDetails?> getPlaceDetails(Prediction prediction) async {
+    final options = kIsWeb ? Options(headers: {"x-requested-with": "XMLHttpRequest"}) : Options(headers: widget.headers);
+
     var url = "https://maps.googleapis.com/maps/api/place/details/json?placeid=${prediction.placeId}&key=${widget.googleAPIKey}";
     try {
-      Response response = await _dio.get(
-        url,
-      );
+      Response response = await _dio.get(url, options: options);
 
       return PlaceDetails.fromJson(response.data);
     } catch (e) {
